@@ -5,6 +5,7 @@
 #include "US_Character.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values for this component's properties
 UUS_WeaponProjectileComponent::UUS_WeaponProjectileComponent()
@@ -14,7 +15,6 @@ UUS_WeaponProjectileComponent::UUS_WeaponProjectileComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	ProjectileClass = AS_BaseWeaponProjectile::StaticClass();
 }
-
 
 // Called when the game starts
 void UUS_WeaponProjectileComponent::BeginPlay()
@@ -52,15 +52,20 @@ void UUS_WeaponProjectileComponent::Throw_Server_Implementation()
 {
 	if (ProjectileClass)
 	{
-		const auto Character = Cast<AUS_Character>(GetOwner());
-		const auto ProjectileSpawnLocation = GetComponentLocation();
-		const auto ProjectileSpawnRotation = GetComponentRotation();
-		
-		auto ProjectileSpawnParams = FActorSpawnParameters();
-		ProjectileSpawnParams.Owner = GetOwner();
-		ProjectileSpawnParams.Instigator = Character;
-		
-		GetWorld()->SpawnActor<AS_BaseWeaponProjectile>(ProjectileClass, ProjectileSpawnLocation, ProjectileSpawnRotation, ProjectileSpawnParams);
+		Throw_Client();
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+		{
+			const auto Character = Cast<AUS_Character>(GetOwner());
+			const auto ProjectileSpawnLocation = GetComponentLocation();
+			const auto ProjectileSpawnRotation = GetComponentRotation();
+			
+			auto ProjectileSpawnParams = FActorSpawnParameters();
+			ProjectileSpawnParams.Owner = GetOwner();
+			ProjectileSpawnParams.Instigator = Character;
+			
+			GetWorld()->SpawnActor<AS_BaseWeaponProjectile>(ProjectileClass, ProjectileSpawnLocation, ProjectileSpawnRotation, ProjectileSpawnParams);
+		}, 0.4f, false);
 	}
 }
 
@@ -68,7 +73,17 @@ void UUS_WeaponProjectileComponent::Throw_Server_Implementation()
 void UUS_WeaponProjectileComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
 
-	// ...
+void UUS_WeaponProjectileComponent::Throw_Client_Implementation()
+{
+	const auto Character = Cast<AUS_Character>(GetOwner());
+	if (Character && ThrowAnimation != nullptr)
+	{
+		if (UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance())
+		{
+			AnimInstance->Montage_Play(ThrowAnimation, 1.f);
+		}
+	}
 }
 

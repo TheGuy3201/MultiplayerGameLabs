@@ -27,6 +27,9 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void Throw_Server();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void Throw_Client();
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -43,4 +46,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ThrowAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ThrowAnimation;
 };

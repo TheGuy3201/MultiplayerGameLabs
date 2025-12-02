@@ -78,6 +78,12 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void SprintEnd_Server();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void SprintStart_Client();
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void SprintEnd_Client();
+
 
 public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
